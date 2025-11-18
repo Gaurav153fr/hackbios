@@ -5,7 +5,9 @@ import { LucideIcon, MessageCircle } from "lucide-react"; // Optional: use lucid
 
 const Chatbox = () => {
   const [open, setOpen] = useState(false); // side panel open/close
-  const [messages, setMessages] = useState<{ sender: "user" | "assistant"; text: string }[]>([]);
+  const [messages, setMessages] = useState<{ sender: "user" | "assistant"; text: string }[]>([
+    { sender: "assistant", text: "Hello! I'm your market intelligence assistant. Ask me about import/export trends, market data, or global trade news." },
+  ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 

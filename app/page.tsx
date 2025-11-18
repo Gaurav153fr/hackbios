@@ -27,7 +27,7 @@ export default function Home() {
               Global Trade Made Simple
             </h1>
             <p className="text-lg md:text-xl max-w-2xl mb-6 text-gray-100">
-              ShipCo connects importers and exporters worldwide, streamlining
+              TradeFlow AI connects importers and exporters worldwide, streamlining
               international commerce with trusted logistics solutions and
               real-time market insights.
             </p>
@@ -106,7 +106,7 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-                Why Choose ShipCo?
+                Why Choose TradeFLow AI?
               </h2>
               <p className="text-lg text-slate-600 max-w-2xl mx-auto">
                 We simplify global trade through technology, trust, and expertise.

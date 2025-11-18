@@ -27,8 +27,8 @@ const Navbar = () => {
 
       {/* Right: Menu Items */}
       <ul className="flex items-center gap-6 text-sm font-medium">
-        <li className="cursor-pointer hover:text-blue-600 transition">Import</li>
-        <li className="cursor-pointer hover:text-blue-600 transition">Export</li>
+        <Link href="/import" className="cursor-pointer hover:text-blue-600 transition">Import</Link>
+        <Link href="/export" className="cursor-pointer hover:text-blue-600 transition">Export</Link>
         <li className="cursor-pointer hover:text-blue-600 transition">About</li>
 
         {/* Buttons */}
