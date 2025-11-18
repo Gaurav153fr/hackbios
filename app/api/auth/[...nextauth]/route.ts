@@ -47,19 +47,20 @@ console.log("user", user);
 
   callbacks: {
     async jwt({ token, user }) {
-      // On login, `user` is available
       if (user) {
-        token.id = user.id;
-        token.workEmail = user.workEmail;
-        token.fullName = user.fullName;
+        const typedUser = user as { id: string; workEmail: string; fullName: string };
+        token.id = typedUser.id;
+        token.workEmail = typedUser.workEmail;
+        token.fullName = typedUser.fullName;
       }
       return token;
-    },
+    }
+    ,
 
     async session({ session, token }) {
-      session.user.id = token.id;
-      session.user.workEmail = token.workEmail;
-      session.user.fullName = token.fullName;
+      session.user.id = token.id as string;
+      session.user.workEmail = token.workEmail as string;
+      session.user.fullName = token.fullName as string;
 
       return session;
     },

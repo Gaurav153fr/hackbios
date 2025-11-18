@@ -7,7 +7,8 @@ declare module "next-auth" {
     user: {
       id: string; // for example
       // optional field
-      fullName?: string;
+      fullName: string;
+      workEmail: string;
     } & DefaultSession["user"];
   }
 }
