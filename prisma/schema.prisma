@@ -11,7 +11,6 @@ datasource db {
 model Product {
   id                  Int        @id @default(autoincrement())
   name                String
-  user                User       @relation(fields: [userId], references: [id])
   userId              String
   price               Float
   description         String
@@ -25,9 +24,32 @@ model Product {
   preferred_countries String[]   @default([])
   createdAt           DateTime   @default(now())
   updatedAt           DateTime   @updatedAt
+  user                User       @relation(fields: [userId], references: [id])
 }
 
-
+model User {
+  id                         String    @id @default(cuid())
+  businessRegistrationNumber String
+  city                       String
+  companyType                String
+  companyWebsite             String
+  country                    String
+  countryOfRegistration      String
+  createdAt                  DateTime  @default(now())
+  documentFile               String?
+  fullName                   String
+  jobTitle                   String
+  legalCompanyName           String
+  mobilePhone                String
+  password                   String
+  postalCode                 String
+  state                      String
+  streetAddress              String
+  taxID                      String
+  updatedAt                  DateTime  @updatedAt
+  workEmail                  String    @unique
+  products                   Product[]
+}
 
 enum Condition {
   new
@@ -40,73 +62,3 @@ enum Preference {
   selected_countries
   public
 }
-
-
-model User {
-  id       String   @id @default(cuid())
-  
-  // Registration fields
-  fullName   String
-  jobTitle   String
-  workEmail  String   @unique
-  password   String
-  mobilePhone String
-
-  legalCompanyName        String
-  companyType             String
-  countryOfRegistration   String
-
-  streetAddress  String
-  city           String
-  state          String
-  postalCode     String
-  country        String
-
-  companyWebsite String
-
-  businessRegistrationNumber String
-  taxID                     String
-  documentFile              String?  // file path saved on server or storage
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Product relation
-  products Product[]
-
-
-}
-
-
-
-// model Account {
-//   id                String  @id @default(cuid())
-//   userId            String
-//   type              String
-//   provider          String
-//   providerAccountId String
-//   refresh_token     String?
-//   access_token      String?
-//   expires_at        Int?
-
-//   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-//   @@unique([provider, providerAccountId])
-// }
-
-// model Session {
-//   id           String   @id @default(cuid())
-//   sessionToken String   @unique
-//   userId       String
-//   expires      DateTime
-
-//   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-// }
-
-// model VerificationToken {
-//   identifier String
-//   token      String @unique
-//   expires    DateTime
-
-//   @@unique([identifier, token])
-// }

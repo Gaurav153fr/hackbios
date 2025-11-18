@@ -15,6 +15,7 @@ export default function Page() {
     condition: "new",
     transportMode: "sea",
     expectedShipmentTime: "",
+    price:"",
   });
 
   const [listingType, setListingType] = useState("global");
@@ -90,7 +91,8 @@ export default function Page() {
         !formData.productType ||
         !formData.totalQuantity ||
         !formData.minimumOrderQuantity ||
-        !formData.hsCode
+        !formData.hsCode||
+        !formData.price
       ) {
         alert("Please fill in all required fields");
         return;
@@ -113,8 +115,8 @@ export default function Page() {
     // Convert frontend → Prisma
     const prismaPayload = {
       name: formData.productName,
-      userId: "USER_ID_FROM_AUTH", // TODO: Replace with actual logged-in user ID
-      price: 0, // ❗ YOU need to add a "price" field in your form
+      userId: id, // TODO: Replace with actual logged-in user ID
+      price: parseFloat(formData.price), // ❗ YOU need to add a "price" field in your form
       description: "No description", // ❗ or add textarea in UI
       total_quantity: Number(formData.totalQuantity),
       min_order_quantity: Number(formData.minimumOrderQuantity),
@@ -166,6 +168,9 @@ export default function Page() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Product Name */}
             <div>
+               <label className="block text-sm font-semibold text-slate-700 mb-2">
+                USER ID :{session && session.user && session?.user.id} <span className="text-red-500">*</span>
+              </label>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Product Name <span className="text-red-500">*</span>
               </label>
@@ -213,6 +218,20 @@ export default function Page() {
                 className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
+                 <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
+               Price <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                name="price"
+                value={formData.price}
+                onChange={handleInputChange}
+                placeholder="Enter total price in USD"
+                className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
 
             {/* Minimum Order Quantity */}
             <div>
@@ -257,7 +276,7 @@ export default function Page() {
                 className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer"
               >
                 <option value="new">New</option>
-                <option value="old">Old</option>
+                <option value="used">used</option>
                 <option value="refurbished">Refurbished</option>
               </select>
             </div>
