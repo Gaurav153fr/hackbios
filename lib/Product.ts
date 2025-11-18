@@ -9,7 +9,7 @@ export async function createProduct(data: {
   userId: string;
   price: number;
   description: string;
-  toatal_quantity: number;
+ 
   min_order_quantity: number;
   hsn_code: string;
   condition: "new" | "used" | "refurbished";
@@ -63,6 +63,7 @@ export async function getAllProducts() {
         message: "Products fetched successfully",
         data: products,
       };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error("❌ Error fetching products:", error);
   

@@ -113,24 +113,31 @@ console.log("user",user);
     alert("User not logged in");
     return;
   }
+  type PreferenceType = "private" | "public" | "selected_countries";
+
+// Map your listingType to the enum
+const enumPreference: PreferenceType =
+  listingType === "global"
+    ? "public"
+    : listingType === "selected"
+    ? "selected_countries"
+    : "private";
+
     // Convert frontend → Prisma
     const prismaPayload = {
       name: formData.productName,
       userId: user.id,  // TODO: Replace with actual logged-in user ID
-      price: 0, // ❗ YOU need to add a "price" field in your form
-      description: "No description", // ❗ or add textarea in UI
+      price: 0, //  YOU need to add a "price" field in your form
+      description: "No description", //  or add textarea in UI
       total_quantity: Number(formData.totalQuantity),
       min_order_quantity: Number(formData.minimumOrderQuantity),
       hsn_code: formData.hsCode,
-      condition: formData.condition,
+      condition: formData.condition as "new" | "used" | "refurbished",
       category: formData.productType,
       preference:
-        listingType === "global"
-          ? "public"
-          : listingType === "selected"
-          ? "selected_countries"
-          : "private",
-      preferred_countries: selectedCountries,
+        enumPreference
+,  
+      prefered_countries: selectedCountries,
     };
   
     try {
@@ -265,7 +272,7 @@ console.log("user",user);
                 className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer"
               >
                 <option value="new">New</option>
-                <option value="old">Old</option>
+                <option value="used">used</option>
                 <option value="refurbished">Refurbished</option>
               </select>
             </div>

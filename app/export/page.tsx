@@ -111,6 +111,16 @@ export default function Page() {
     alert("You must be logged in to submit a product");
     return;
   }
+  type PreferenceType = "private" | "public" | "selected_countries";
+
+// Map your listingType to the enum
+const enumPreference: PreferenceType =
+  listingType === "global"
+    ? "public"
+    : listingType === "selected"
+    ? "selected_countries"
+    : "private";
+
   // TODO: Replace with actual logged-in user ID
     // Convert frontend → Prisma
     const prismaPayload = {
@@ -121,15 +131,10 @@ export default function Page() {
       total_quantity: Number(formData.totalQuantity),
       min_order_quantity: Number(formData.minimumOrderQuantity),
       hsn_code: formData.hsCode,
-      condition: formData.condition,
+      condition: formData.condition as "new" | "used" | "refurbished",
       category: formData.productType,
-      preference:
-        listingType === "global"
-          ? "public"
-          : listingType === "selected"
-          ? "selected_countries"
-          : "private",
-      preferred_countries: selectedCountries,
+      preference:enumPreference,
+      prefered_countries: selectedCountries,
     };
   
     try {

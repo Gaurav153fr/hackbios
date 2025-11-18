@@ -14,7 +14,7 @@ interface UserData {
 }
 
 export default function Profile() {
-  const navigate = useNavigate();
+
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   const mockUserData: UserData = {
@@ -36,7 +36,7 @@ export default function Profile() {
       
       await new Promise((resolve) => setTimeout(resolve, 300));
       
-      navigate("/");
+      window.location.href = "/";
     } catch (error) {
       console.error("Sign out error:", error);
       setIsSigningOut(false);

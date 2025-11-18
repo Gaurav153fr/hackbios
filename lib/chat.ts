@@ -1,6 +1,6 @@
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { generateText } from 'ai';
-
+export const runtime = 'edge';
 // Load your API key securely
 const MY_GEMINI_API_KEY = "AIzaSyDNKkIPOi0WRJMqeCRFm16YB4sN8czr1kg"
 

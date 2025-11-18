@@ -25,7 +25,7 @@ const prisma = new PrismaClient();
         businessRegistrationNumber: data.businessRegistrationNumber,
         taxID: data.taxID,
         // Optionally store uploaded file name or path
-        documentFile: data.documentFile?.name || null,
+        documentFile: "fileName",
       },
     });
         // 2️⃣ Auto-login using Auth.js
