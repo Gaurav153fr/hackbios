@@ -1,57 +1,69 @@
-import NextAuth from "next-auth"
-import { PrismaAdapter } from "@auth/prisma-adapter"
-import Credentials from "next-auth/providers/credentials"
-import bcrypt from "bcrypt"
-import prisma from "@/lib/prisma"
+import NextAuth from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+import { PrismaClient } from "@/app/generated/prisma";
+import { compare } from "bcryptjs";
 
-export const authOptions = {
-  adapter: PrismaAdapter(prisma),
+const prisma = new PrismaClient();
 
+const handler = NextAuth({
   session: {
-    strategy: "jwt",
+    strategy: "jwt", // REQUIRED for credentials login
   },
 
   providers: [
-    Credentials({
+    CredentialsProvider({
       name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "text" },
+        workEmail: { label: "Work Email", type: "text" },
         password: { label: "Password", type: "password" },
       },
 
-      async authorize(credentials: any) {
-        if (!credentials?.email || !credentials?.password) return null
+      async authorize(credentials) {
+        if (!credentials?.workEmail || !credentials.password) {
+          throw new Error("Email or Password missing");
+        }
 
         const user = await prisma.user.findUnique({
-          where: { workEmail: credentials.email },
-        })
+          where: { workEmail: credentials.workEmail },
+        });
 
-        if (!user) return null
+        if (!user) throw new Error("User not found");
+console.log("user", user);
 
-        const valid = await bcrypt.compare(credentials.password, user.password)
-        if (!valid) return null
+        // If you are using plain passwords temporarily:
+        if (user.password !== credentials.password) {
+          throw new Error("Invalid credentials");
+        }
 
-        return user
+        // Return user → Will be encoded into JWT
+        return {
+          id: user.id,
+          workEmail: user.workEmail,
+          fullName: user.fullName,
+        };
       },
     }),
   ],
 
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.id = user.id
-      return token
+      // On login, `user` is available
+      if (user) {
+        token.id = user.id;
+        token.workEmail = user.workEmail;
+        token.fullName = user.fullName;
+      }
+      return token;
     },
 
     async session({ session, token }) {
-      if (token?.id) session.user.id = token.id
-      return session
+      session.user.id = token.id;
+      session.user.workEmail = token.workEmail;
+      session.user.fullName = token.fullName;
+
+      return session;
     },
   },
+});
 
-  pages: {
-    signIn: "/login",
-  },
-}
-
-const handler = NextAuth(authOptions)
-export { handler as GET, handler as POST }
+export { handler as GET, handler as POST };

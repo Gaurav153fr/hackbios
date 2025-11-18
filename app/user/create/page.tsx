@@ -1,3 +1,4 @@
+"use client"
 import CreateNewProduct from '@/components/CreateNewProduct'
 import React from 'react'
 

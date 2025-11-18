@@ -1,6 +1,6 @@
 "use server"
 import { PrismaClient } from "@/app/generated/prisma";
-
+import { signIn } from "next-auth/react";
 
 const prisma = new PrismaClient();
 
@@ -28,6 +28,12 @@ const prisma = new PrismaClient();
         documentFile: data.documentFile?.name || null,
       },
     });
+        // 2️⃣ Auto-login using Auth.js
+        await signIn("credentials", {
+            email: data.workEmail,
+            password: data.password,
+            redirect: false,
+          });
 
     return user;
   } catch (error) {
@@ -59,4 +65,9 @@ export type RegisterFormData = {
   
 
 
-  export { createUser };
+  async function getUserById(userId: string) {
+    return await prisma.user.findUnique({
+      where: { id: userId },
+    });
+  }
+  export { createUser,getUserById };

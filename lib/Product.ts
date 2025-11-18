@@ -42,3 +42,36 @@ export async function createProduct(data: {
     return { success: false, error };
   }
 }
+
+export async function getAllProducts() {
+    try {
+      const products = await prisma.product.findMany({
+        include: {
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              workEmail: true,
+              country: true,
+            },
+          },
+        },
+      });
+  
+      return {
+        success: true,
+        message: "Products fetched successfully",
+        data: products,
+      };
+    } catch (error: any) {
+      console.error("❌ Error fetching products:", error);
+  
+      return {
+        success: false,
+        message: "Failed to fetch products",
+        error: error.message,
+      };
+    } finally {
+      await prisma.$disconnect();
+    }
+  }
