@@ -1,10 +1,12 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import { getAssistantResponse } from "@/lib/chat";
-import { LucideIcon, MessageCircle } from "lucide-react"; // Optional: use lucide icons
+// Assuming you'll replace getAssistantResponse with a streaming version
+// The actual import path and function name will depend on your server-side implementation.
+import { getAssistantResponse } from "@/lib/chat"; 
+import { MessageCircle } from "lucide-react"; 
 
 const Chatbox = () => {
-  const [open, setOpen] = useState(false); // side panel open/close
+  const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<{ sender: "user" | "assistant"; text: string }[]>([
     { sender: "assistant", text: "Hello! I'm your market intelligence assistant. Ask me about import/export trends, market data, or global trade news." },
   ]);
@@ -21,25 +23,77 @@ const Chatbox = () => {
     scrollToBottom();
   }, [messages, open]);
 
+  // --- START: STREAMING IMPLEMENTATION ---
+  
   const handleSend = async () => {
     if (!input.trim()) return;
 
-    // Add user message
-    setMessages((prev) => [...prev, { sender: "user", text: input }]);
-    const userMessage = input;
+    const userMessageText = input;
+    // 1. Add the user message and an empty assistant message placeholder
+    setMessages((prev) => [
+      ...prev, 
+      { sender: "user", text: userMessageText },
+      { sender: "assistant", text: "" } // Placeholder for streaming
+    ]);
+    
     setInput("");
     setLoading(true);
 
     try {
-      const response = await getAssistantResponse(userMessage);
-      setMessages((prev) => [...prev, { sender: "assistant", text: response }]);
+      // 2. Call the new streaming API function
+      // This function should return a ReadableStream or similar object/iterator.
+      const responseStream = await getAssistantResponse(userMessageText, );
+      
+      if (typeof responseStream === 'string') {
+        // Handle the server-side error message gracefully
+        setMessages((prev) => [
+            ...prev, 
+            { sender: "assistant", text: responseStream } // Display the error message
+        ]);
+        setLoading(false);
+        return; // Exit the function gracefully
+    }
+      const reader = responseStream.getReader();
+    
+      // 3. Read the stream chunk by chunk
+      while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+        
+                const chunk = typeof value === 'string' ? value : new TextDecoder().decode(value); 
+        
+                // 4. ***REFINED UPDATE LOGIC***
+                setMessages((prev) => {
+                  const newMessages = [...prev];
+                  const lastMessageIndex = newMessages.length - 1;
+                   // Append the new chunk to the existing text of the last message
+                  newMessages[lastMessageIndex].text += chunk; 
+                  return newMessages;
+                });
+        scrollToBottom(); 
+         }
+      
     } catch (err) {
-      setMessages((prev) => [...prev, { sender: "assistant", text: "Error getting response." }]);
+      console.error("Streaming error:", err);
+      // Update the last message (the placeholder) with the error
+      setMessages((prev) => {
+        const newMessages = [...prev];
+        const lastMessage = newMessages[newMessages.length - 1];
+        if (lastMessage.sender === 'assistant') {
+             lastMessage.text = lastMessage.text.length > 0 
+                 ? lastMessage.text + "\n\n[Stream Interrupted: Error]" 
+                 : "Error getting response.";
+        }
+        return newMessages;
+      });
     } finally {
       setLoading(false);
     }
   };
+  
+  // --- END: STREAMING IMPLEMENTATION ---
 
+  // ... (The rest of the return block is the same)
   return (
     <>
       {/* Floating assistant button */}
@@ -67,13 +121,19 @@ const Chatbox = () => {
             {messages.map((msg, idx) => (
               <div
                 key={idx}
-                className={`p-2 rounded-md ${
-                  msg.sender === "user" ? "bg-blue-100 self-end" : "bg-gray-100 self-start"
+                // Use a dynamic class to allow messages to wrap correctly
+                className={`p-2 rounded-md max-w-[85%] ${
+                  msg.sender === "user" ? "bg-blue-100 ml-auto" : "bg-gray-100 mr-auto"
                 }`}
               >
-                {msg.text}
+                {/* Add a blinking cursor while streaming */}
+                {msg.text || (loading && msg.sender === 'assistant' && idx === messages.length - 1 ? '❚' : '')}
               </div>
             ))}
+            {/* Loading indicator that scrolls */}
+            {loading && (
+              <div className="text-gray-500 text-sm italic">Assistant is typing...</div>
+            )}
             <div ref={messagesEndRef}></div>
           </div>
 
@@ -86,11 +146,12 @@ const Chatbox = () => {
               placeholder="Ask something..."
               className="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              disabled={loading} // Disable input while streaming
             />
             <button
               onClick={handleSend}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-              disabled={loading}
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:bg-gray-400"
+              disabled={loading || !input.trim()} // Disable send button while streaming or if input is empty
             >
               {loading ? "..." : "Send"}
             </button>

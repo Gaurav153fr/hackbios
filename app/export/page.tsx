@@ -1,8 +1,12 @@
 "use client"
 import { useState } from "react";
-import { Ship, Plane, Copy } from "lucide-react";
+import { Ship, Plane, Copy, LoaderIcon } from "lucide-react";
 import { createProduct } from "@/lib/Product";
 import { useSession } from "next-auth/react";
+import { getProductDataByImage } from "@/lib/chat";
+import { Product } from "../generated/prisma";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export default function Page() {
   const { data: session } = useSession();
@@ -19,10 +23,11 @@ export default function Page() {
   });
 
   const [listingType, setListingType] = useState("global");
+  const [loading, setLoading] = useState(false);
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
   const [privateKey, setPrivateKey] = useState("");
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
-
+const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const productTypes = [
     "Electronics",
     "Textiles & Apparel",
@@ -148,6 +153,59 @@ const enumPreference: PreferenceType =
   };
   
 
+  
+
+// Assuming getProductDataByImage is defined elsewhere
+// Assuming selectedImage is a File or Blob object
+
+async function handleFileUpload(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): Promise<void> {
+  event.preventDefault(); // Good practice for form/button handlers
+  setLoading(true);
+  if (!selectedImage) {
+    alert("Please select an image file before uploading.");
+    return;
+  }
+
+  try {
+    // 1. Read the file as a Data URI (Base64 encoded string with prefix)
+    const dataUri: string = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(selectedImage);
+    });
+
+    // 2. 🌟 FIX: Split the Data URI string and get the raw Base64 data (the second element)
+    const rawBase64Data = dataUri.split(',')[1];
+    
+    // 3. Call the function with the cleaned data
+    const response = await getProductDataByImage({
+      base64Data: rawBase64Data, // This is now the clean Base64 string
+      mimeType: selectedImage.type,
+    });
+
+    alert("File uploaded successfully!");
+    console.log("Uploaded file details:", response);
+    const productData:Product = JSON.parse(response as string);
+    console.log("Parsed product data:", productData);
+    // You can now use productData to pre-fill your form or for other purposes
+    setFormData((prev) => ({
+      ...prev,
+      productName: productData.name,
+      productType: productData.category,
+      totalQuantity: productData.total_quantity.toString(),
+      minimumOrderQuantity: productData.min_order_quantity.toString(),
+      hsCode: productData.hsn_code,
+      condition: productData.condition,
+      price: productData.price.toString(),
+    }));
+  } catch (error) {
+    console.error("Error uploading file:", error);
+    alert("An error occurred while uploading the file.");
+  }
+  setLoading(false);
+}
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Page Header */}
@@ -161,7 +219,20 @@ const enumPreference: PreferenceType =
           </p>
         </div>
       </div>
-
+<div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 ">
+  <h3 className="text-2xl font-bold text-slate-900 mb-2">Generate using product image</h3>
+  <Input type="file" accept="image/*" onChange={(e) => setSelectedImage(e.target.files![0])} className="mb-4"/>
+  
+  <Button onClick={handleFileUpload} className="w-full">Upload</Button>
+ {selectedImage &&(
+  <div>
+    {loading ? (<div><span>Uploading...</span> <LoaderIcon  className="animate-spin"/></div>) : (
+    
+  <img src={selectedImage ? URL.createObjectURL(selectedImage) : ''} alt="Selected" width={200} />)}</div>)} 
+<div className="flex items-center mt-10 justify-center w-full text-center    ">
+  <p className="text-slate-600 text-lg w-full m-auto ">or</p>
+  </div>
+</div>
       {/* Main Form */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* First Card - Product Details */}
@@ -407,7 +478,7 @@ const enumPreference: PreferenceType =
                         setShowCountryDropdown(!showCountryDropdown)
                       }
                       className="w-full px-4 py-2 rounded-lg border border-slate-300 bg-white text-left text-sm font-medium text-slate-700 hover:bg-slate-50"
-                    >
+                    >nn
                       {selectedCountries.length === 0
                         ? "Select countries..."
                         : (`${selectedCountries.length.toString()+ countries+ " selected"}`)}
